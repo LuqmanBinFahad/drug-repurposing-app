@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drug Repurposing AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-pills"></i> Drug Repurposing AI</h1>
+            <p>Discover new therapeutic uses for existing drugs</p>
+        </header>
+
+        <main class="main-content">
+            <section class="search-section">
+                <div class="search-container">
+                    <form action="/search" method="POST" class="search-form">
+                        <div class="search-input-container">
+                            <input type="text" name="query" id="search-input" placeholder="Enter drug name..." required>
+                            <button type="submit" class="search-btn">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                        <div id="suggestions" class="suggestions-container"></div>
+                    </form>
+                </div>
+            </section>
+
+            <section class="features">
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <i class="fas fa-search-dollar"></i>
+                        <h3>Repurposing Predictions</h3>
+                        <p>AI-powered confidence scores for new therapeutic uses</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-vial"></i>
+                        <h3>Clinical Trials</h3>
+                        <p>Real-time trial status and phase information</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-molecule"></i>
+                        <h3>Molecular View</h3>
+                        <p>Interactive molecular structure visualization</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-shield-alt"></i>
+                        <h3>Safety Checker</h3>
+                        <p>Drug interaction warnings and safety profiles</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>© 2025 Drug Repurposing AI | Powered by Advanced Machine Learning</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drug Repurposing Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-pills"></i> Drug Repurposing AI</h1>
+            <p>Results for: "{{ query or 'All Drugs' }}"</p>
+        </header>
+
+        <main class="main-content">
+            <div class="results-header">
+                <a href="/" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Search
+                </a>
+                <button id="download-report" class="download-btn">
+                    <i class="fas fa-file-pdf"></i> Download Report
+                </button>
+            </div>
+
+            {% if drugs %}
+                <div class="results-grid">
+                    {% for drug in drugs %}
+                    <div class="result-card">
+                        <div class="card-header">
+                            <h2>{{ drug.name }}</h2>
+                            <div class="confidence-badge">
+                                <span>{{ drug.confidence | default('N/A') }}%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <p class="indication"><strong>Indication:</strong> {{ drug.indication | default('N/A') }}</p>
+                            
+                            <!-- Molecular Structure -->
+                            <div class="molecular-section">
+                                <h4><i class="fas fa-molecule"></i> Molecular Information</h4>
+                                <p><strong>Formula:</strong> {{ (drug.molecular.formula) | default('N/A') }}</p>
+                                <p><strong>Molecular Weight:</strong> {{ (drug.molecular.weight) | default('N/A') }} g/mol</p>
+                                {% if drug.molecular and drug.molecular.cid %}
+                                <img src="https://pubchem.ncbi.nlm.nih.gov/image/imagefly.cgi?cid={{ drug.molecular.cid }}&width=200&height=200" 
+                                     alt="Molecular structure of {{ drug.name | default('drug') }}" 
+                                     class="molecular-image">
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Clinical Trials -->
+                            <div class="trials-section">
+                                <h4><i class="fas fa-vial"></i> Clinical Trials</h4>
+                                {% if drug.trials and drug.trials.count and drug.trials.count > 0 %}
+                                    {% for trial in (drug.trials.trials | default([])) %}
+                                    <div class="trial-item">
+                                        <div class="trial-header">
+                                            <strong>{{ trial.nct_id | default('N/A') }}</strong>
+                                            <span class="trial-phase {{ trial.phase | default('unknown') | lower | replace(' ', '-') }}">{{ trial.phase | default('Unknown') }}</span>
+                                        </div>
+                                        <p>{{ trial.title | default('No title available') }}</p>
+                                        <div class="trial-details">
+                                            <span class="trial-status {{ trial.status | default('unknown') | lower }}">{{ trial.status | default('Unknown') }}</span>
+                                            <span>Start: {{ trial.start_date | default('N/A') }}</span>
+                                            <span>End: {{ trial.completion_date | default('N/A') }}</span>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <p class="no-trials">No active clinical trials found for this indication.</p>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Drug Interactions -->
+                            <div class="interactions-section">
+                                <h4><i class="fas fa-exclamation-triangle"></i> Drug Interactions</h4>
+                                {% if drug.interactions %}
+                                    {% for interaction in (drug.interactions | default([])) %}
+                                    <div class="interaction-item">
+                                        <div class="interaction-header">
+                                            <strong>{{ interaction.drug | default('Unknown drug') }}</strong>
+                                            <span class="severity-badge {{ interaction.severity | default('unknown') | lower }}">{{ interaction.severity | default('Unknown') }}</span>
+                                        </div>
+                                        <p>{{ interaction.description | default('No description available.') }}</p>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <p class="no-interactions">No significant interactions found.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-results">
+                    <i class="fas fa-search"></i>
+                    <h3>No results found</h3>
+                    <p>Try searching for common drugs like "Aspirin", "Metformin", or "Ibuprofen"</p>
+                </div>
+            {% endif %}
+        </main>
+
+        <footer class="footer">
+            <p>© 2025 Drug Repurposing AI | Powered by Advanced Machine Learning</p>
+        </footer>
+    </div>
+
+    <script>
+        // Prepare data for PDF generation - serialize server-side data to safe JSON for client
+        const drugData = JSON.parse('{{ drugs | default([]) | tojson | safe }}');
+        const downloadBtn = document.getElementById('download-report');
+
+        if (downloadBtn) {
+            downloadBtn.addEventListener('click', function() {
+                if (!Array.isArray(drugData) || drugData.length === 0) {
+                    alert('No results to download');
+                    return;
+                }
+                
+                fetch('/generate_pdf', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ drugs: drugData })
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data || !data.filename) throw new Error('Invalid response from server');
+                    window.open(`/static/${data.filename}`, '_blank');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error generating report');
+                });
+            });
+        }
+    </script>
+</body>
+</html>
