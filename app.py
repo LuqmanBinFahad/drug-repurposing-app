@@ -52,11 +52,6 @@ def warm_cache():
         except Exception:
             # If API calls fail, just continue
             pass
-
-@app.before_first_request
-def initialize_cache():
-    warm_cache()
-
 def get_cache_key(*args, **kwargs):
     """Generate a cache key based on function arguments"""
     key = f"{request.endpoint}:{args}:{sorted(kwargs.items())}"
