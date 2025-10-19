@@ -289,3 +289,17 @@ window.addEventListener('load', function() {
     window.addEventListener('offline', updateOnlineStatus);
     updateOnlineStatus();
 });
+// ... (keep existing script content like autocomplete, favorites, etc.) ...
+
+// Add link to Compare page in header or somewhere prominent (optional, for easy access)
+// You can add this dynamically or just update the HTML
+if (window.location.pathname !== '/compare') {
+    const compareLink = document.createElement('a');
+    compareLink.href = '/compare';
+    compareLink.textContent = 'Compare Drugs';
+    compareLink.className = 'compare-link-header'; // Add CSS class if needed
+    // You might want to append this to the header or navigation
+    // e.g., document.querySelector('.header').appendChild(compareLink);
+}
+
+// ... (rest of your existing script functions remain) ...

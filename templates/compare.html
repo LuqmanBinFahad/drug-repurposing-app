@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compare Drugs - Drug Repurposing AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-pills"></i> Drug Repurposing AI</h1>
+            <div class="cache-status">
+                <small>Cache Status: Active | Last updated: {{ cache_info.last_updated if cache_info else 'Just now' }}</small>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="results-header">
+                <a href="/" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> New Search
+                </a>
+                {% if drug_data_list %}
+                    <button id="download-compare-report" class="btn btn-primary">
+                        <i class="fas fa-file-pdf"></i> Download Comparison PDF
+                    </button>
+                    <button id="export-csv" class="btn btn-secondary">
+                        <i class="fas fa-file-csv"></i> Export CSV
+                    </button>
+                {% endif %}
+            </div>
+
+            <h2>Compare Drugs</h2>
+
+            {% if not drug_data_list %}
+                <form method="post" action="/compare" class="compare-form">
+                    <div class="compare-inputs">
+                        <input type="text" name="compare_drug_1" placeholder="Enter first drug name (e.g., Metformin)" required>
+                        <input type="text" name="compare_drug_2" placeholder="Enter second drug name (e.g., Aspirin)" required>
+                        <input type="text" name="compare_drug_3" placeholder="Enter third drug name (optional, e.g., Sildenafil)">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Compare Drugs</button>
+                </form>
+            {% else %}
+                <!-- Comparison Summary Section -->
+                <section class="comparison-summary">
+                    <h3>Comparison Summary</h3>
+                    <div class="summary-stats">
+                        {% for drug in drug_data_list %}
+                            <div class="summary-card">
+                                <h4>{{ drug.name }}</h4>
+                                <p><strong>Confidence:</strong> {{ drug.confidence }}%</p>
+                                <p><strong>Clinical Trials:</strong> {{ drug.trials.count }}</p>
+                                <p><strong>Interactions (High/Moderate):</strong>
+                                    {% set high_int = drug.interactions | selectattr('severity', 'equalto', 'High') | list | length %}
+                                    {% set mod_int = drug.interactions | selectattr('severity', 'equalto', 'Moderate') | list | length %}
+                                    {{ high_int }} High, {{ mod_int }} Moderate
+                                </p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <!-- Charts Section -->
+                <section class="comparison-charts">
+                    <h3>Visual Comparison</h3>
+                    <div class="chart-container">
+                        <canvas id="confidenceChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="trialsChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="interactionsChart"></canvas>
+                    </div>
+                </section>
+
+                <!-- Detailed Comparison Table -->
+                <section class="comparison-table-section">
+                    <h3>Detailed Comparison</h3>
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Property</th>
+                                {% for drug in drug_data_list %}
+                                    <th>{{ drug.name }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Confidence Score</strong></td>
+                                {% for drug in drug_data_list %}
+                                    <td>{{ drug.confidence }}%</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td><strong>Molecular Formula</strong></td>
+                                {% for drug in drug_data_list %}
+                                    <td>{{ drug.molecular.molecular_formula | default('N/A') }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td><strong>Molecular Weight</strong></td>
+                                {% for drug in drug_data_list %}
+                                    <td>{{ drug.molecular.molecular_weight | default('N/A') }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td><strong>Clinical Trial Count</strong></td>
+                                {% for drug in drug_data_list %}
+                                    <td>{{ drug.trials.count }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td><strong>High Severity Interactions</strong></td>
+                                {% for drug in drug_data_list %}
+                                    <td>{{ drug.interactions | selectattr('severity', 'equalto', 'High') | list | length }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td><strong>Moderate Severity Interactions</strong></td>
+                                {% for drug in drug_data_list %}
+                                    <td>{{ drug.interactions | selectattr('severity', 'equalto', 'Moderate') | list | length }}</td>
+                                {% endfor %}
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <!-- Individual Drug Details -->
+                {% for drug in drug_data_list %}
+                    <section class="drug-card compare-individual">
+                        <div class="card-header">
+                            <h2>{{ drug.name }}</h2>
+                            <div class="confidence-score">
+                                <span class="score">{{ drug.confidence }}%</span>
+                                <span class="label">Confidence</span>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="section">
+                                <h3><i class="fas fa-molecule"></i> Molecular Information</h3>
+                                {% if drug.molecular %}
+                                    <div class="molecular-data">
+                                        <p><strong>Formula:</strong> {{ drug.molecular.molecular_formula | default('N/A') }}</p>
+                                        <p><strong>Weight:</strong> {{ drug.molecular.molecular_weight | default('N/A') }}</p>
+                                        <div class="molecular-image">
+                                            <img src="{{ drug.molecular.image_url }}" alt="Molecular structure of {{ drug.name }}" onerror="this.onerror=null; this.src='https://placehold.co/300x200?text=No+Image';">
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <p>No molecular data available</p>
+                                {% endif %}
+                            </div>
+                            <div class="section">
+                                <h3><i class="fas fa-vial"></i> Clinical Trials</h3>
+                                {% if drug.trials and drug.trials.count > 0 %}
+                                    <p>Found {{ drug.trials.count }} ongoing or completed trials</p>
+                                    <div class="trials-list">
+                                        {% for trial in drug.trials.trials[:2] %} <!-- Show first 2 -->
+                                            <div class="trial-item">
+                                                <h4>{{ trial.title | default('N/A') }}</h4>
+                                                <p><strong>Phase:</strong> {{ trial.phase | default('N/A') }}</p>
+                                                <p><strong>Status:</strong> {{ trial.status | default('N/A') }}</p>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <p>No clinical trials found for this drug</p>
+                                {% endif %}
+                            </div>
+                            <div class="section">
+                                <h3><i class="fas fa-exclamation-triangle"></i> Drug Interactions</h3>
+                                {% if drug.interactions %}
+                                    <div class="interactions-list">
+                                        {% for interaction in drug.interactions[:3] %} <!-- Show first 3 -->
+                                            <div class="interaction-item severity-{{ interaction.severity.lower() }}">
+                                                <strong>{{ interaction.drug | default('N/A') }}</strong> - 
+                                                <span class="severity">{{ interaction.severity | default('N/A') }}</span>: 
+                                                {{ interaction.description | default('N/A') }}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <p>No significant interactions reported</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </section>
+                {% endfor %}
+            {% endif %}
+        </main>
+
+        <footer class="footer">
+            <p>© 2025 Drug Repurposing AI | Powered by Advanced Machine Learning</p>
+        </footer>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container"></div>
+
+    <script>
+        // Prepare data for PDF/CVS generation and charts
+        const drugComparisonData = JSON.parse('{{ drug_data_list | tojson | safe }}');
+        const drugNames = drugComparisonData.map(d => d.name);
+        const confidenceScores = drugComparisonData.map(d => d.confidence);
+        const trialCounts = drugComparisonData.map(d => d.trials.count);
+        const interactionCounts = drugComparisonData.map(d => {
+            const high = d.interactions.filter(i => i.severity === 'High').length;
+            const mod = d.interactions.filter(i => i.severity === 'Moderate').length;
+            return { high, mod };
+        });
+
+        // Initialize Charts if data is available
+        if (drugComparisonData.length > 0) {
+            // Confidence Chart
+            const confCtx = document.getElementById('confidenceChart').getContext('2d');
+            new Chart(confCtx, {
+                type: 'bar',
+                data: {
+                    labels: drugNames,
+                    datasets: [{
+                        label: 'Confidence Score (%)',
+                        data: confidenceScores,
+                        backgroundColor: 'rgba(74, 144, 226, 0.7)',
+                        borderColor: 'rgba(74, 144, 226, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true, max: 100 }
+                    }
+                }
+            });
+
+            // Trials Chart
+            const trialsCtx = document.getElementById('trialsChart').getContext('2d');
+            new Chart(trialsCtx, {
+                type: 'bar',
+                data: {
+                    labels: drugNames,
+                    datasets: [{
+                        label: 'Number of Trials',
+                        data: trialCounts,
+                        backgroundColor: 'rgba(52, 199, 89, 0.7)',
+                        borderColor: 'rgba(52, 199, 89, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // Interactions Chart
+            const intCtx = document.getElementById('interactionsChart').getContext('2d');
+            new Chart(intCtx, {
+                type: 'bar',
+                data: {
+                    labels: drugNames,
+                    datasets: [
+                        {
+                            label: 'High Severity Interactions',
+                            data: interactionCounts.map(i => i.high),
+                            backgroundColor: 'rgba(255, 59, 48, 0.7)',
+                        },
+                        {
+                            label: 'Moderate Severity Interactions',
+                            data: interactionCounts.map(i => i.mod),
+                            backgroundColor: 'rgba(255, 149, 0, 0.7)',
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // PDF Download for Comparison
+        document.getElementById('download-compare-report').addEventListener('click', function() {
+            if (!Array.isArray(drugComparisonData) || drugComparisonData.length === 0) {
+                showToast('No comparison data to download', 'error');
+                return;
+            }
+
+            // Prepare data structure similar to single drug report but for multiple
+            const reportData = { drugs: drugComparisonData, comparison: true };
+
+            fetch('/generate_pdf', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(reportData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.filename) {
+                    const link = document.createElement('a');
+                    link.href = `/static/${data.filename}`;
+                    link.download = data.filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    showToast('Comparison PDF report downloaded successfully!', 'success');
+                } else {
+                    showToast('Error generating comparison PDF report', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Error generating comparison PDF report', 'error');
+            });
+        });
+
+        // CSV Export
+        document.getElementById('export-csv').addEventListener('click', function() {
+            if (!Array.isArray(drugComparisonData) || drugComparisonData.length === 0) {
+                showToast('No comparison data to export', 'error');
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            // Headers
+            csvContent += "Drug Name,Confidence Score,Molecular Formula,Molecular Weight,Trial Count,High Interactions,Moderate Interactions\n";
+            // Rows
+            drugComparisonData.forEach(drug => {
+                const highInt = drug.interactions.filter(i => i.severity === 'High').length;
+                const modInt = drug.interactions.filter(i => i.severity === 'Moderate').length;
+                csvContent += `"${drug.name}","${drug.confidence}","${drug.molecular.molecular_formula || 'N/A'}","${drug.molecular.molecular_weight || 'N/A'}","${drug.trials.count}","${highInt}","${modInt}"\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "drug_comparison.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast('Comparison CSV exported successfully!', 'success');
+        });
+
+        // Toast notification system (reusing from previous script)
+        function showToast(message, type = 'info') {
+            const toastContainer = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+
+            const closeBtn = document.createElement('span');
+            closeBtn.className = 'toast-close';
+            closeBtn.innerHTML = '&times;';
+            closeBtn.onclick = () => toast.remove();
+
+            toast.appendChild(closeBtn);
+            toastContainer.appendChild(toast);
+
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

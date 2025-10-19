@@ -455,7 +455,43 @@ def clear_cache():
     """Admin endpoint to clear cache (for development)"""
     cache.clear()
     return jsonify({'status': 'Cache cleared successfully'})
+# --- START OF NEW CODE FOR COMPARISON FEATURE ---
 
+@app.route('/compare', methods=['GET', 'POST'])
+def compare():
+    drug_names = []
+    drug_data_list = []
+
+    if request.method == 'POST':
+        # Get list of drug names from the form (e.g., compare_drug_1, compare_drug_2, etc.)
+        drug_names = []
+        i = 1
+        while True:
+            drug_name = request.form.get(f'compare_drug_{i}')
+            if not drug_name:
+                break
+            drug_names.append(drug_name.strip())
+            i += 1
+
+        # Limit to 3 drugs for comparison
+        drug_names = drug_names[:3]
+
+        # Fetch data for each drug
+        for name in drug_names:
+            if name:
+                data = {
+                    'name': name,
+                    'confidence': calculate_confidence_score(name, 'New therapeutic use'),
+                    'trials': search_clinical_trials(name),
+                    'molecular': search_pubchem(name),
+                    'interactions': search_drug_interactions(name)
+                }
+                drug_data_list.append(data)
+
+    cache_info = {'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+    return render_template('compare.html', drug_data_list=drug_data_list, drug_names=drug_names, cache_info=cache_info)
+
+# --- END OF NEW CODE FOR COMPARISON FEATURE ---
 if __name__ == '__main__':
     # Create static directory if it doesn't exist
     if not os.path.exists('static'):

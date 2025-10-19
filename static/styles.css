@@ -529,3 +529,129 @@ body {
         width: calc(100vw - 40px);
     }
 }
+
+/* --- START OF NEW CSS FOR COMPARISON FEATURE --- */
+
+/* Compare Page Styles */
+.compare-form {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+.compare-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.compare-inputs input {
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.comparison-summary {
+    margin-bottom: 30px;
+}
+
+.summary-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.summary-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.summary-card h4 {
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.comparison-charts {
+    margin-bottom: 30px;
+}
+
+.chart-container {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    height: 300px; /* Fixed height for charts */
+}
+
+.comparison-table-section {
+    margin-bottom: 30px;
+}
+
+.comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.comparison-table th,
+.comparison-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.comparison-table th {
+    background-color: #4a90e2;
+    color: white;
+}
+
+.compare-individual {
+    margin-top: 20px;
+}
+
+.compare-link-header {
+    position: absolute;
+    top: 10px;
+    right: 100px; /* Adjust based on other elements */
+    color: white;
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+}
+
+.compare-link-header:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Responsive adjustments for comparison */
+@media (max-width: 768px) {
+    .compare-inputs {
+        flex-direction: column;
+    }
+    .summary-stats {
+        grid-template-columns: 1fr;
+    }
+    .chart-container {
+        height: 250px;
+    }
+    .comparison-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
+
+/* --- END OF NEW CSS FOR COMPARISON FEATURE --- *//* --- START OF NEW CSS FOR COMPARISON FEATURE --- */
