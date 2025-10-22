@@ -150,46 +150,13 @@ if (localStorage.getItem('darkMode') === 'true') {
     document.body.classList.add('dark-mode');
 }
 
-// Add dark mode styles dynamically if needed
-if (!document.getElementById('dark-mode-styles')) {
-    const darkModeStyles = document.createElement('style');
-    darkModeStyles.id = 'dark-mode-styles';
-    darkModeStyles.textContent = `
-        body.dark-mode {
-            background-color: #1a1a1a;
-            color: #e0e0e0;
-        }
-        .dark-mode .container {
-            background-color: #2d2d2d;
-            color: #e0e0e0;
-        }
-        .dark-mode .header {
-            background: linear-gradient(135deg, #2c3e50, #34495e);
-        }
-        .dark-mode .search-section,
-        .dark-mode .feature-card,
-        .dark-mode .drug-card,
-        .dark-mode .favorites-section {
-            background: #2d2d2d;
-            color: #e0e0e0;
-        }
-        .dark-mode .section {
-            border-bottom-color: #444;
-        }
-        .dark-mode .trial-item {
-            background: #3a3a3a;
-        }
-        .dark-mode .interaction-item.severity-high {
-            background: #4a1515;
-        }
-        .dark-mode .interaction-item.severity-moderate {
-            background: #4a3a15;
-        }
-        .dark-mode .interaction-item.severity-low {
-            background: #1a4a1a;
-        }
-    `;
-    document.head.appendChild(darkModeStyles);
+// Dynamically load dark mode CSS file for maintainability
+if (!document.getElementById('dark-mode-css')) {
+    const darkModeLink = document.createElement('link');
+    darkModeLink.id = 'dark-mode-css';
+    darkModeLink.rel = 'stylesheet';
+    darkModeLink.href = '/static/dark-mode.css'; // Ensure this path matches your project structure
+    document.head.appendChild(darkModeLink);
 }
 
 // Add dark mode toggle button to header if it doesn't exist
