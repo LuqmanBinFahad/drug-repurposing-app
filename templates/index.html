@@ -10,6 +10,20 @@
     <!-- PWA Meta Tags -->
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
     <meta name="theme-color" content="#4a90e2">
+    <style>
+  .demo-watermark {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    z-index: 1000;
+  }
+</style>
+<div class="demo-watermark">DEMO MODE — LOCALHOST ONLY</div>
 </head>
 <body>
     <div class="container">
