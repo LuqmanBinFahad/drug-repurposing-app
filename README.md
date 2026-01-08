@@ -1,5 +1,7 @@
 # Drug Repurposing App
 
+## A Flask web app for AI-assisted drug repurposing using molecular similarity, PubChem data, and clinical trial insights.
+
 A small Flask web application that demonstrates simple drug-repurposing support features:
 - queries PubChem, ClinicalTrials.gov (and uses fallbacks) to retrieve molecular, trials and interaction information;
 - computes a simple "confidence" score for repurposing using molecular/text similarity (RDKit optional);
