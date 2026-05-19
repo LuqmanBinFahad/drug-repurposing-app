@@ -1,5 +1,20 @@
+# requirements.txt
+# Core
 Flask==2.3.3
-reportlab==4.0.4
-requests==2.31.0
 gunicorn==21.2.0
-Flask-Caching==2.1.0
+
+# HTTP + PDF
+requests==2.31.0
+reportlab==4.0.4
+
+# LRU cache (explicit maxsize, thread-safe)
+cachetools==5.3.2
+
+# Molecular similarity — optional but strongly recommended.
+# Install via pip on Render; or conda install -c conda-forge rdkit on local.
+# If import fails at runtime, the app degrades gracefully (tanimoto_score = 0).
+rdkit==2023.9.5
+
+# NOTE: set  WEB_CONCURRENCY=1  in Render environment variables.
+# RDKit occupies ~120 MB of RSS. Two gunicorn workers would consume ~240 MB
+# of that alone, leaving insufficient headroom in the 512 MB free-tier limit.
