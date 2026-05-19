@@ -1,0 +1,207 @@
+<!-- ================= templates/base.html ================= -->
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Clinical Precision Dashboard</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-bright": "#f7f9fb",
+                    "on-primary-fixed-variant": "#004f4f",
+                    "surface-container-highest": "#e0e3e5",
+                    "background": "#f7f9fb",
+                    "on-primary-fixed": "#002020",
+                    "on-error-container": "#93000a",
+                    "surface-container": "#eceef0",
+                    "secondary": "#476083",
+                    "on-error": "#ffffff",
+                    "on-tertiary-fixed": "#0e1e1e",
+                    "primary": "#006565",
+                    "on-background": "#191c1e",
+                    "on-surface-variant": "#3e4949",
+                    "on-secondary-fixed": "#001c3a",
+                    "inverse-surface": "#2d3133",
+                    "tertiary-container": "#657675",
+                    "surface": "#f7f9fb",
+                    "on-surface": "#191c1e",
+                    "inverse-primary": "#76d6d5",
+                    "error-container": "#ffdad6",
+                    "secondary-fixed-dim": "#afc8f0",
+                    "primary-container": "#008080",
+                    "surface-container-high": "#e6e8ea",
+                    "on-tertiary-fixed-variant": "#3a4a49",
+                    "error": "#ba1a1a",
+                    "primary-fixed": "#93f2f2",
+                    "on-secondary": "#ffffff",
+                    "on-primary-container": "#e3fffe",
+                    "outline": "#6e7979",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary": "#4d5d5d",
+                    "tertiary-fixed": "#d4e6e5",
+                    "surface-variant": "#e0e3e5",
+                    "tertiary-fixed-dim": "#b8cac9",
+                    "surface-tint": "#006a6a",
+                    "outline-variant": "#bdc9c8",
+                    "on-secondary-container": "#445d80",
+                    "secondary-fixed": "#d4e3ff",
+                    "on-secondary-fixed-variant": "#2f486a",
+                    "secondary-container": "#bdd6ff",
+                    "primary-fixed-dim": "#76d6d5",
+                    "on-primary": "#ffffff",
+                    "inverse-on-surface": "#eff1f3",
+                    "on-tertiary-container": "#ebfdfc",
+                    "surface-container-low": "#f2f4f6",
+                    "on-tertiary": "#ffffff",
+                    "surface-dim": "#d8dadc"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "unit": "4px",
+                    "gutter": "16px",
+                    "container-padding": "24px",
+                    "table-cell-padding": "8px 12px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-md": ["Inter"],
+                    "mono-data": ["JetBrains Mono"],
+                    "display-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "mono-data": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                    "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #f7f9fb;
+            font-family: 'Inter', sans-serif;
+        }
+        .data-grid-zebra tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface antialiased overflow-hidden">
+
+<!-- TopNavBar (fixed, same as original code.html) -->
+<header class="bg-surface fixed top-0 left-0 right-0 z-50 border-b border-outline-variant flex justify-between items-center w-full px-container-padding h-16">
+    <div class="flex items-center gap-4">
+        <span class="text-headline-sm font-headline-sm font-bold text-primary">Clinical Precision Dashboard</span>
+        <div class="h-6 w-px bg-outline-variant"></div>
+        <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-low border border-outline-variant">
+            <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+            <span class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider">MCP Server: Connected</span>
+        </div>
+    </div>
+    <div class="flex items-center gap-6">
+        <div class="relative group">
+            <span class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors cursor-pointer">settings</span>
+        </div>
+        <div class="relative group">
+            <span class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors cursor-pointer">help_outline</span>
+        </div>
+        <div class="flex items-center gap-3 pl-4 border-l border-outline-variant">
+            <div class="text-right">
+                <p class="text-label-md font-label-md text-on-surface">Dr. Elena Ross</p>
+                <p class="text-[10px] text-on-surface-variant uppercase font-bold">Principal Investigator</p>
+            </div>
+            <img alt="Researcher Profile" class="w-8 h-8 rounded-full border border-outline-variant object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwvKSF1gcLH1ZIJ8VpkAxphpxUbegocv741neJ7omONGJKqpI72LP_UXiYyZ-3ZYnjLnuP-vRLmfavWoQNpEOg49pqQWRAViq0nqf0YIExv-NfHs_ZWM-AIN-qXT77mfmCSWhj3gDu8sXWuzYwRTKcrN7f77gdznABGucH6zcrWMIH2STFMPF_vRcYXO59Ni4DjNM_FKXrEbkZ71xCYY0dUrt8oGTxsrrsgwYLAJUq2X5Qz-2unULsqKSzuw3s_E4Figly30kdTauj"/>
+        </div>
+    </div>
+</header>
+
+<div class="flex h-screen pt-16">
+    <!-- SideNavBar (fixed) -->
+    <aside class="fixed left-0 top-0 h-full flex flex-col pt-16 z-40 bg-surface-container-low border-r border-outline-variant w-[240px]">
+        <div class="p-6">
+            <h2 class="text-headline-sm font-headline-sm font-bold text-primary">Clinical Precision</h2>
+            <p class="text-body-sm font-body-sm text-on-surface-variant">Drug Repurposing Unit</p>
+        </div>
+        <nav class="flex-1 px-4 space-y-1">
+            <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 rounded-lg group" href="/">
+                <span class="material-symbols-outlined group-hover:text-primary">search</span>
+                <span class="text-label-md font-label-md">Drug Search</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container rounded-lg scale-[0.98] transition-transform" href="/compare">
+                <span class="material-symbols-outlined">compare_arrows</span>
+                <span class="text-label-md font-label-md">Drug Comparison</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 rounded-lg group" href="#">
+                <span class="material-symbols-outlined group-hover:text-primary">biotech</span>
+                <span class="text-label-md font-label-md">Molecular Analysis</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 rounded-lg group" href="#">
+                <span class="material-symbols-outlined group-hover:text-primary">menu_book</span>
+                <span class="text-label-md font-label-md">Research Library</span>
+            </a>
+        </nav>
+        <div class="p-4 border-t border-outline-variant">
+            <a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg" href="#">
+                <span class="material-symbols-outlined text-sm">cloud_done</span>
+                <span class="text-label-md font-label-md">System Status</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg" href="#">
+                <span class="material-symbols-outlined text-sm">description</span>
+                <span class="text-label-md font-label-md">Documentation</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="ml-[240px] flex-1 overflow-y-auto p-8">
+        {% block content %}{% endblock %}
+    </main>
+</div>
+
+<!-- Global scripts (hover effects, pulse) -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const rows = document.querySelectorAll('.data-grid-zebra tbody tr');
+        rows.forEach(row => {
+            row.addEventListener('mouseenter', () => {
+                row.style.boxShadow = 'inset 4px 0 0 0 #008080';
+                row.style.transition = 'box-shadow 0.2s ease';
+            });
+            row.addEventListener('mouseleave', () => {
+                row.style.boxShadow = 'none';
+            });
+        });
+
+        setInterval(() => {
+            const pulse = document.querySelector('.animate-pulse');
+            if (pulse) pulse.classList.toggle('opacity-50');
+        }, 1000);
+    });
+</script>
+</body>
+</html>
