@@ -1,293 +1,121 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drug Repurposing Results</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Chart.js for visualizations -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
-    <div class="container">
-        <header class="header">
-            <h1><i class="fas fa-pills"></i> Drug Repurposing AI</h1>
-            <div class="cache-status">
-                <small>Cache Status: Active | Last updated: {{ cache_info.last_updated if cache_info else 'Just now' }}</small>
-            </div>
-        </header>
-        
-        <main class="main-content">
-            <div class="results-header">
-                <a href="/" class="back-btn">
-                    <i class="fas fa-arrow-left"></i> New Search
-                </a>
-                <button id="download-report" class="btn btn-primary">
-                    <i class="fas fa-file-pdf"></i> Download PDF Report
-                </button>
-            </div>
-            
-            {% if drugs %}
-                {% for drug in drugs %}
-                <div class="drug-card">
-                    <div class="card-header">
-                        <h2>{{ drug.name | default('N/A') }}</h2>
-                        <div class="confidence-score">
-                            <span class="score">{{ drug.confidence | default('N/A') }}%</span>
-                            <span class="label">Confidence</span>
-                        </div>
-                        <button class="favorite-btn" data-drug="{{ drug.name }}">
-                            <i class="far fa-star"></i>
-                        </button>
-                    </div>
-                    
-                    <div class="card-content">
-                        <div class="section">
-                            <h3><i class="fas fa-stethoscope"></i> Therapeutic Indication</h3>
-                            <p>{{ drug.indication | default('N/A') }}</p>
-                        </div>
-                        
-                        <div class="section">
-                            <h3><i class="fas fa-molecule"></i> Molecular Information</h3>
-                            {% if drug.molecular %}
-                                <div class="molecular-data">
-                                    <p><strong>Formula:</strong> {{ drug.molecular.molecular_formula | default('N/A') }}</p>
-                                    <p><strong>Weight:</strong> {{ drug.molecular.molecular_weight | default('N/A') }}</p>
-                                    <div class="molecular-image">
-                                        <img src="{{ drug.molecular.image_url }}" alt="Molecular structure of {{ drug.name }}" onerror="this.onerror=null; this.src='https://placehold.co/300x200?text=No+Image';">
-                                    </div>
-                                </div>
-                            {% else %}
-                                <p>No molecular data available</p>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="section">
-                            <h3><i class="fas fa-vial"></i> Clinical Trials</h3>
-                            {% if drug.trials and drug.trials.count > 0 %}
-                                <p>Found {{ drug.trials.count }} ongoing or completed trials</p>
-                                <div class="trials-list">
-                                    {% for trial in drug.trials.trials %}
-                                        <div class="trial-item">
-                                            <h4>{{ trial.title | default('N/A') }}</h4>
-                                            <p><strong>Phase:</strong> {{ trial.phase | default('N/A') }}</p>
-                                            <p><strong>Status:</strong> {{ trial.status | default('N/A') }}</p>
-                                            <p><strong>Sponsor:</strong> {{ trial.sponsor | default('N/A') }}</p>
-                                            <p><strong>NCT ID:</strong> {{ trial.nct_id | default('N/A') }}</p>
-                                        </div>
-                                    {% endfor %}
-                                </div>
-                            {% else %}
-                                <p>No clinical trials found for this drug</p>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="section">
-                            <h3><i class="fas fa-exclamation-triangle"></i> Drug Interactions</h3>
-                            {% if drug.interactions %}
-                                <div class="interactions-list">
-                                    {% for interaction in drug.interactions %}
-                                        <div class="interaction-item severity-{{ interaction.severity.lower() }}">
-                                            <strong>{{ interaction.drug | default('N/A') }}</strong> - 
-                                            <span class="severity">{{ interaction.severity | default('N/A') }}</span>: 
-                                            {{ interaction.description | default('N/A') }}
-                                        </div>
-                                    {% endfor %}
-                                </div>
-                            {% else %}
-                                <p>No significant interactions reported</p>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- PubMed Literature Section -->
-                        <div class="section">
-                            <h3><i class="fas fa-book"></i> Related Research Papers</h3>
-                            <div id="pubmed-results">
-                                <p>Loading related research papers...</p>
-                            </div>
-                        </div>
-                        
-                        <!-- Comparative Analysis Section -->
-                        <div class="section">
-                            <h3><i class="fas fa-balance-scale"></i> Compare with Other Drugs</h3>
-                            <div class="compare-controls">
-                                <select id="compare-select" multiple>
-                                    <option value="">Select drugs to compare...</option>
-                                    {% for mock_drug in drugs %}
-                                        {% if mock_drug.name != drug.name %}
-                                            <option value="{{ mock_drug.name }}">{{ mock_drug.name }}</option>
-                                        {% endif %}
-                                    {% endfor %}
-                                    {% for mock_drug in [{"name": "Aspirin"}, {"name": "Metformin"}, {"name": "Sildenafil"}, {"name": "Rapamycin"}] %}
-                                        {% if mock_drug.name != drug.name %}
-                                            <option value="{{ mock_drug.name }}">{{ mock_drug.name }}</option>
-                                        {% endif %}
-                                    {% endfor %}
-                                </select>
-                                <button id="compare-btn" class="btn btn-secondary">Compare</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            {% else %}
-                <div class="no-results">
-                    <i class="fas fa-search"></i>
-                    <h3>No results found</h3>
-                    <p>Try searching for a different drug name</p>
-                    <a href="/" class="btn btn-primary">New Search</a>
-                </div>
-            {% endif %}
-        </main>
-        
-        <footer class="footer">
-            <p>© 2025 Drug Repurposing AI by Dr. Luqman Bin Fahad | Powered by Advanced Machine Learning</p>
-        </footer>
+<!-- ================= templates/results.html ================= -->
+{% extends "base.html" %}
+
+{% block content %}
+{% if drugs and drugs|length > 0 %}
+{% set drug = drugs[0] %}
+<div class="space-y-8">
+    <!-- Header section -->
+    <div class="flex justify-between items-start">
+        <div>
+            <h1 class="text-headline-md font-headline-md text-on-surface mb-1">{{ drug.name }}</h1>
+            <p class="text-body-md text-on-surface-variant">Repurposing intelligence profile · Confidence Score: {{ drug.confidence }}%</p>
+        </div>
+        <div class="flex gap-3">
+            <a href="/compare" class="px-4 py-2 bg-primary-container text-on-primary-container font-label-md rounded flex items-center gap-2 hover:opacity-90 transition">
+                <span class="material-symbols-outlined text-sm">compare_arrows</span> Compare
+            </a>
+        </div>
     </div>
-    
-    <!-- Toast Notification Container -->
-    <div id="toast-container"></div>
-    
-    <script>
-        // Prepare data for PDF generation - serialize server-side data to safe JSON for client
-        const drugData = JSON.parse('{{ drugs | tojson | safe }}');
-        const downloadBtn = document.getElementById('download-report');
-        
-        if (downloadBtn) {
-            downloadBtn.addEventListener('click', function() {
-                if (!Array.isArray(drugData) || drugData.length === 0) {
-                    showToast('No results to download', 'error');
-                    return;
-                }
-                
-                fetch('/generate_pdf', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ drugs: drugData })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.filename) {
-                        // Create a temporary link to download the PDF
-                        const link = document.createElement('a');
-                        link.href = `/static/${data.filename}`;
-                        link.download = data.filename;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        showToast('PDF report downloaded successfully!', 'success');
-                    } else {
-                        showToast('Error generating PDF report', 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showToast('Error generating PDF report', 'error');
-                });
-            });
-        }
 
-        // Favorite functionality
-        document.querySelectorAll('.favorite-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const drugName = this.getAttribute('data-drug');
-                let favorites = JSON.parse(localStorage.getItem('drug_favorites') || '[]');
-                
-                if (favorites.includes(drugName)) {
-                    favorites = favorites.filter(name => name !== drugName);
-                    this.innerHTML = '<i class="far fa-star"></i>';
-                    showToast(`${drugName} removed from favorites`, 'info');
-                } else {
-                    favorites.push(drugName);
-                    this.innerHTML = '<i class="fas fa-star"></i>';
-                    showToast(`${drugName} added to favorites`, 'success');
-                }
-                
-                localStorage.setItem('drug_favorites', JSON.stringify(favorites));
-                updateFavoritesDisplay();
-            });
-        });
+    <!-- Confidence & Summary Card -->
+    <div class="grid grid-cols-12 gap-6">
+        <div class="col-span-8 bg-surface border border-outline-variant p-6 rounded-lg">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-label-md font-label-md text-on-surface-variant uppercase tracking-widest">Overall Repurposing Potential</h3>
+                <span class="text-3xl font-bold text-primary">{{ drug.confidence }}%</span>
+            </div>
+            <div class="w-full h-2 bg-outline-variant rounded-full overflow-hidden">
+                <div class="h-full bg-primary" style="width: {{ drug.confidence }}%"></div>
+            </div>
+            <div class="mt-6 grid grid-cols-2 gap-4 text-center">
+                <div class="bg-surface-container-low p-3 rounded">
+                    <p class="text-label-md text-on-surface-variant">Clinical Phase</p>
+                    <p class="text-headline-sm font-semibold">{{ drug.max_phase|default(0) }} / 4</p>
+                </div>
+                <div class="bg-surface-container-low p-3 rounded">
+                    <p class="text-label-md text-on-surface-variant">Target Count</p>
+                    <p class="text-headline-sm font-semibold">{{ drug.target_count|default(0) }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-span-4 bg-primary text-white p-6 rounded-lg shadow-sm">
+            <h4 class="text-label-md font-label-md opacity-80 uppercase tracking-widest mb-4">Lead Indication</h4>
+            <p class="text-body-lg font-semibold mb-2">{{ drug.indication }}</p>
+            <p class="text-body-sm opacity-90">{{ drug.mechanism }}</p>
+            <div class="mt-4 pt-4 border-t border-white/20 text-label-md">ChEMBL ID: {{ drug.chembl_id or 'Not available' }}</div>
+        </div>
+    </div>
 
-        // Load favorite status on page load
-        function loadFavoriteStatus() {
-            const favorites = JSON.parse(localStorage.getItem('drug_favorites') || '[]');
-            document.querySelectorAll('.favorite-btn').forEach(button => {
-                const drugName = button.getAttribute('data-drug');
-                if (favorites.includes(drugName)) {
-                    button.innerHTML = '<i class="fas fa-star"></i>';
-                }
-            });
-        }
+    <!-- Molecular & Mechanism -->
+    <div class="bg-surface border border-outline-variant p-6 rounded-lg">
+        <h3 class="text-label-md font-label-md text-on-surface-variant uppercase tracking-widest mb-4">Physicochemical & Mechanism</h3>
+        <div class="grid grid-cols-2 gap-y-4">
+            <div><span class="text-label-md text-on-surface-variant">Formula:</span> <span class="font-mono-data ml-2">{{ drug.molecular.molecular_formula }}</span></div>
+            <div><span class="text-label-md text-on-surface-variant">Molecular Weight:</span> <span class="font-mono-data ml-2">{{ drug.molecular.molecular_weight }} g/mol</span></div>
+            <div class="col-span-2"><span class="text-label-md text-on-surface-variant">IUPAC Name:</span> <span class="text-body-sm ml-2">{{ drug.molecular.iupac_name }}</span></div>
+            <div class="col-span-2"><span class="text-label-md text-on-surface-variant">Canonical SMILES:</span> <code class="font-mono-data text-xs bg-surface-container-low p-1 rounded">{{ drug.molecular.canonical_smiles or 'N/A' }}</code></div>
+        </div>
+    </div>
 
-        // Toast notification system
-        function showToast(message, type = 'info') {
-            const toastContainer = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast toast-${type}`;
-            toast.textContent = message;
-            
-            // Add close button
-            const closeBtn = document.createElement('span');
-            closeBtn.className = 'toast-close';
-            closeBtn.innerHTML = '&times;';
-            closeBtn.onclick = () => toast.remove();
-            
-            toast.appendChild(closeBtn);
-            toastContainer.appendChild(toast);
-            
-            // Auto remove after 5 seconds
-            setTimeout(() => {
-                if (toast.parentNode) {
-                    toast.remove();
-                }
-            }, 5000);
-        }
+    <!-- Clinical Trials -->
+    <div class="bg-surface border border-outline-variant overflow-hidden rounded-lg">
+        <div class="px-6 py-4 border-b border-outline-variant">
+            <h3 class="text-label-md font-label-md text-on-surface-variant uppercase tracking-widest">Clinical Trials ({{ drug.trials.count }})</h3>
+        </div>
+        {% if drug.trials.trials %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-left data-grid-zebra">
+                <thead class="bg-on-background text-surface-bright">
+                    <tr>
+                        <th class="p-3 text-label-md">NCT ID</th>
+                        <th class="p-3 text-label-md">Title</th>
+                        <th class="p-3 text-label-md">Phase</th>
+                        <th class="p-3 text-label-md">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for trial in drug.trials.trials[:5] %}
+                    <tr class="border-b border-outline-variant">
+                        <td class="p-3 font-mono-data">{{ trial.nct_id }}</td>
+                        <td class="p-3 text-body-sm">{{ trial.title }}</td>
+                        <td class="p-3">{{ trial.phase }}</td>
+                        <td class="p-3">{{ trial.status }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-6 text-center text-on-surface-variant">No registered trials found.</div>
+        {% endif %}
+    </div>
 
-        // Update favorites display
-        function updateFavoritesDisplay() {
-            const favorites = JSON.parse(localStorage.getItem('drug_favorites') || '[]');
-            const container = document.getElementById('favorites-list');
-            const noFavMsg = document.getElementById('no-favorites-message');
-            
-            if (favorites.length > 0) {
-                noFavMsg.style.display = 'none';
-                container.innerHTML = '';
-                favorites.forEach(fav => {
-                    const favItem = document.createElement('div');
-                    favItem.className = 'favorite-item';
-                    favItem.innerHTML = `
-                        <span>${fav}</span>
-                        <button class="remove-fav-btn" data-drug="${fav}">Remove</button>
-                    `;
-                    container.appendChild(favItem);
-                });
-                
-                // Add event listeners to remove buttons
-                document.querySelectorAll('.remove-fav-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const drugName = this.getAttribute('data-drug');
-                        let favorites = JSON.parse(localStorage.getItem('drug_favorites') || '[]');
-                        favorites = favorites.filter(name => name !== drugName);
-                        localStorage.setItem('drug_favorites', JSON.stringify(favorites));
-                        updateFavoritesDisplay();
-                        showToast(`${drugName} removed from favorites`, 'info');
-                    });
-                });
-            } else {
-                noFavMsg.style.display = 'block';
-                container.innerHTML = '';
-            }
-        }
-
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            loadFavoriteStatus();
-            updateFavoritesDisplay();
-        });
-    </script>
-</body>
-</html>
+    <!-- Drug Interactions -->
+    <div class="bg-surface border border-outline-variant p-6 rounded-lg">
+        <h3 class="text-label-md font-label-md text-on-surface-variant uppercase tracking-widest mb-4">Significant Drug Interactions</h3>
+        {% if drug.interactions %}
+        <div class="grid gap-3">
+            {% for i in drug.interactions[:6] %}
+            <div class="flex gap-3 p-3 bg-surface-container-low rounded">
+                <span class="w-1.5 h-1.5 rounded-full {% if i.severity == 'High' %}bg-error{% elif i.severity == 'Moderate' %}bg-primary{% else %}bg-outline{% endif %} mt-1.5"></span>
+                <div>
+                    <p class="text-body-sm font-semibold">{{ i.drug }}</p>
+                    <p class="text-[11px] text-on-surface-variant">{{ i.description }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-body-sm text-on-surface-variant">No curated interactions available.</p>
+        {% endif %}
+    </div>
+</div>
+{% else %}
+<div class="bg-surface border border-outline-variant p-12 text-center rounded-xl">
+    <span class="material-symbols-outlined text-5xl text-outline mb-4">info</span>
+    <h2 class="text-headline-sm mb-2">No drug profile loaded</h2>
+    <p class="text-body-md text-on-surface-variant">Please perform a search from the <a href="/" class="text-primary font-semibold">homepage</a>.</p>
+</div>
+{% endif %}
+{% endblock %}
